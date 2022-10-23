@@ -15,6 +15,7 @@ type ExpectedResult struct {
 
 const EXPECTED_DOCUMENTS_SEPARATOR = ','
 const EXPECTED_DOCUMENT_PARTS_SEPARATOR = ':'
+const EXPECTED_INVALID_SYMBOL = "!"
 
 const INPUT_STRUCTURE_REGEX = "^([\\s\\S]+?)([=?~]{2})([\\s\\S]+?)$"
 
@@ -77,7 +78,14 @@ func (result *ExpectedResult) parseExpectedDocs(input string) {
 
 		docParts := strings.Split(docDesc, string(EXPECTED_DOCUMENT_PARTS_SEPARATOR))
 
-		doc := ExtractedDocument{DocType: doc_type.Parse(docParts[0])}
+		doc := ExtractedDocument{IsValid: true}
+
+		if strings.HasPrefix(docParts[0], EXPECTED_INVALID_SYMBOL) {
+			doc.IsValid = false
+			doc.DocType = doc_type.Parse(strings.TrimLeft(docParts[0], EXPECTED_INVALID_SYMBOL))
+		} else {
+			doc.DocType = doc_type.Parse(docParts[0])
+		}
 
 		if len(docParts) > 1 {
 			doc.Value = strings.TrimSpace(docParts[1])

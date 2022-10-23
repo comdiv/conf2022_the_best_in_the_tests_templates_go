@@ -141,31 +141,31 @@ func Test_Parsed(t *testing.T) {
 		{
 			testName:       "Документы без значений",
 			input:          "паспорт рф, инн юл==PASSPORT_RF, INN_UL",
-			expectedResult: []output.ExtractedDocument{{DocType: doc_type.PASSPORT_RF, Value: ""}, {DocType: doc_type.INN_UL, Value: ""}},
+			expectedResult: []output.ExtractedDocument{{DocType: doc_type.PASSPORT_RF, Value: "", IsValid: true}, {DocType: doc_type.INN_UL, Value: "", IsValid: true}},
 		},
 
 		{
 			testName:       "Некоторые документ со значениями, некоторые без",
 			input:          "паспорт рф,  инн юл 0123456789==PASSPORT_RF, INN_UL:0123456789",
-			expectedResult: []output.ExtractedDocument{{DocType: doc_type.PASSPORT_RF, Value: ""}, {DocType: doc_type.INN_UL, Value: "0123456789"}},
+			expectedResult: []output.ExtractedDocument{{DocType: doc_type.PASSPORT_RF, Value: "", IsValid: true}, {DocType: doc_type.INN_UL, Value: "0123456789", IsValid: true}},
 		},
 
 		{
 			testName:       "Все документы со значениями",
 			input:          "паспорт рф 9876543210,  инн юл 0123456789==PASSPORT_RF:9876543210, INN_UL:0123456789",
-			expectedResult: []output.ExtractedDocument{{DocType: doc_type.PASSPORT_RF, Value: "9876543210"}, {DocType: doc_type.INN_UL, Value: "0123456789"}},
+			expectedResult: []output.ExtractedDocument{{DocType: doc_type.PASSPORT_RF, Value: "9876543210", IsValid: true}, {DocType: doc_type.INN_UL, Value: "0123456789", IsValid: true}},
 		},
 
 		{
 			testName:       "проверка на трим значения",
 			input:          "паспорт рф 9876543210==PASSPORT_RF:   9876543210  ",
-			expectedResult: []output.ExtractedDocument{{DocType: doc_type.PASSPORT_RF, Value: "9876543210"}},
+			expectedResult: []output.ExtractedDocument{{DocType: doc_type.PASSPORT_RF, Value: "9876543210", IsValid: true}},
 		},
 
 		{
 			testName:       "проверка невалидный документ",
 			input:          "паспорт рф 1==!PASSPORT_RF:1",
-			expectedResult: []output.ExtractedDocument{{DocType: doc_type.PASSPORT_RF, Value: "9876543210", IsValid: false}},
+			expectedResult: []output.ExtractedDocument{{DocType: doc_type.PASSPORT_RF, Value: "1", IsValid: false}},
 		},
 	}
 
