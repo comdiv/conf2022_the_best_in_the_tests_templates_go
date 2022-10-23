@@ -1,7 +1,7 @@
-package validate
+package test
 
 import (
-	"conf2022_the_best_in_the_tests_templates_go/input"
+	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/input"
 	"os"
 	"strings"
 	"testing"

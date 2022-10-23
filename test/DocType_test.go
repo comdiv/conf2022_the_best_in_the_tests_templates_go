@@ -1,8 +1,8 @@
 package test
 
 import (
-	"conf2022_the_best_in_the_tests_templates_go/doc_type"
 	"fmt"
+	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/doc_type"
 	"testing"
 )
 

@@ -10,17 +10,18 @@ import (
 )
 
 // TestDesc
-//Описание тестов.
-//Входной файл должен выглядеть так:
-//		author | number | stringToProcessed | isDisabled | commentOnFailure
-//		harisov | 1 | паспорт Харисов Д.И. 1009 123848==PASSPORT:1009123848 | false | Не удалось определить корректный паспорт ФЛ
-//		harisov | 2 | Паспорт Харисов Д.И. 10090 123848=?PASSPORT:1009123848 | false | Не удалось определить некорректный паспорт ФЛ
+// Описание тестов.
+// Входной файл должен выглядеть так:
+//
+//	Author | Number | StringToProcessed | isDisabled | CommentOnFailure
+//	harisov | 1 | паспорт Харисов Д.И. 1009 123848==PASSPORT:1009123848 | false | Не удалось определить корректный паспорт ФЛ
+//	harisov | 2 | Паспорт Харисов Д.И. 10090 123848=?PASSPORT:1009123848 | false | Не удалось определить некорректный паспорт ФЛ
 type TestDesc struct {
-	author            string
-	number            int
-	stringToProcessed string
-	isDisabled        bool
-	commentOnFailure  string
+	Author            string
+	Number            int
+	StringToProcessed string
+	IsDisabled        bool
+	CommentOnFailure  string
 }
 
 // ParseFromFile получает набор описаний тестов из файла
@@ -35,7 +36,10 @@ func ParseFromFile(filePath string) []TestDesc {
 
 	for {
 		record, e := reader.Read()
-		if e != nil {
+
+		if e == io.EOF {
+			break
+		} else if e != nil {
 			panic(e)
 		}
 
@@ -58,11 +62,11 @@ func ParseFromFile(filePath string) []TestDesc {
 			isDisabled := strings.EqualFold(record[3], strconv.FormatBool(true))
 
 			result = append(result, TestDesc{
-				author:            record[0],
-				number:            number,
-				stringToProcessed: record[2],
-				isDisabled:        isDisabled,
-				commentOnFailure:  record[4],
+				Author:            record[0],
+				Number:            number,
+				StringToProcessed: record[2],
+				IsDisabled:        isDisabled,
+				CommentOnFailure:  record[4],
 			})
 		}
 	}
@@ -76,12 +80,14 @@ type TestDescFileValidateResult struct {
 	errors  []string
 }
 
-/* Validate
+/*
+	Validate
+
 Валидирует входной файл:
-	1. наличие хедера
-	2. кол-во разделителей в каждой строке = кол-ву разделителей в хедере
-	3. тип полей number и isDisabled
-	4. что идентификатор теста (author + number) уникальный
+ 1. наличие хедера
+ 2. кол-во разделителей в каждой строке = кол-ву разделителей в хедере
+ 3. тип полей Number и isDisabled
+ 4. что идентификатор теста (Author + Number) уникальный
 */
 func Validate(filePath string) TestDescFileValidateResult {
 	file, _ := os.Open(filePath)
@@ -127,7 +133,7 @@ func Validate(filePath string) TestDescFileValidateResult {
 				}
 
 				if lineNumberFromMap, ok := testIdToLineNumber[record[0]+record[1]]; ok {
-					errorMessages = append(errorMessages, FormErrorMessage(currentLineNumber, fmt.Sprintf("В строках с номерами %d и %d совпадает связка author+number", lineNumberFromMap, currentLineNumber)))
+					errorMessages = append(errorMessages, FormErrorMessage(currentLineNumber, fmt.Sprintf("В строках с номерами %d и %d совпадает связка Author+Number", lineNumberFromMap, currentLineNumber)))
 				} else {
 					testIdToLineNumber[record[0]+record[1]] = currentLineNumber
 				}
@@ -178,6 +184,6 @@ func BuildCsvReader(file *os.File) *csv.Reader {
 	return reader
 }
 
-const DEFAULT_HEADER = "author|number|stringToProcessed|isDisabled|commentOnFailure"
+const DEFAULT_HEADER = "Author|Number|StringToProcessed|isDisabled|CommentOnFailure"
 const DEFAULT_FIELDS_COUNT = 5
 const DEFAULT_COLUMN_DELIMITER = '|'

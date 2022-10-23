@@ -1,7 +1,7 @@
 package output
 
 import (
-	"conf2022_the_best_in_the_tests_templates_go/doc_type"
+	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/doc_type"
 	"log"
 	"regexp"
 	"strings"
@@ -19,8 +19,22 @@ const EXPECTED_INVALID_SYMBOL = "!"
 
 const INPUT_STRUCTURE_REGEX = "^([\\s\\S]+?)([=?~]{2})([\\s\\S]+?)$"
 
-func (result *ExpectedResult) match(actual []ExtractedDocument) bool {
-	panic("need to do")
+func (result *ExpectedResult) Match(actual []ExtractedDocument) bool {
+	switch {
+	case result.IsExactly && result.IsOrderRequired:
+		return compareExactlyOrdered(result.Docs, actual)
+
+	case result.IsExactly && !result.IsOrderRequired:
+		return compareExactlyNotOrdered(result.Docs, actual)
+
+	case !result.IsExactly && result.IsOrderRequired:
+		return compareNotExactlyOrdered(result.Docs, actual)
+
+	case !result.IsExactly && !result.IsOrderRequired:
+		return compareNotExactlyNotOrdered(result.Docs, actual)
+	}
+
+	panic("Unreachable code!")
 }
 
 func Parse(input string) ExpectedResult {
@@ -38,6 +52,83 @@ func Parse(input string) ExpectedResult {
 	result.parseExpectedDocs(splitByRegex[3])
 
 	return result
+}
+
+func compareExactlyOrdered(expected, actual []ExtractedDocument) bool {
+	if len(actual) != len(expected) {
+		return false
+	}
+
+	for i, a := range actual {
+		if !a.equal(expected[i]) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func compareExactlyNotOrdered(expected, actual []ExtractedDocument) bool {
+	if len(actual) != len(expected) {
+		return false
+	}
+
+	for _, e := range expected {
+		if !contains(actual, e) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func compareNotExactlyOrdered(expected, actual []ExtractedDocument) bool {
+	if len(actual) < len(expected) {
+		return false
+	}
+
+	var subsequenceIndex = 0
+
+	if len(expected) != 0 {
+		for _, a := range actual {
+			if a.equal(expected[subsequenceIndex]) {
+				subsequenceIndex += 1
+			}
+
+			if subsequenceIndex == len(expected) {
+				break
+			}
+		}
+	}
+
+	return subsequenceIndex == len(expected)
+}
+
+func compareNotExactlyNotOrdered(expected, actual []ExtractedDocument) bool {
+	if len(actual) < len(expected) {
+		return false
+	}
+
+	if len(expected) == 0 {
+		return true
+	}
+
+	for _, e := range expected {
+		if !contains(actual, e) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func contains(s []ExtractedDocument, e ExtractedDocument) bool {
+	for _, a := range s {
+		if a.equal(e) {
+			return true
+		}
+	}
+	return false
 }
 
 func (result *ExpectedResult) parseConstraints(constraintsString string) {
