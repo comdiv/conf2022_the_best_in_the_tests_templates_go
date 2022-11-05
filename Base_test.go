@@ -7,12 +7,11 @@ import (
 	"testing"
 )
 
-func Test_local(t *testing.T) {
+func Test_base(t *testing.T) {
 	currentDir, _ := os.Getwd()
 
 	files := []test.TestDescFile{
 		{Path: filepath.Join(currentDir, "base.csv"), Type: test.BASE},
-		{Path: filepath.Join(currentDir, "local.csv"), Type: test.LOCAL},
 	}
 
 	testBase := test.TestBase{TestFiles: files}

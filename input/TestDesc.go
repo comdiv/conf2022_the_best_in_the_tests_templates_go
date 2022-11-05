@@ -15,9 +15,9 @@ import (
 // Описание тестов.
 // Входной файл должен выглядеть так:
 //
-//	Author | Number | StringToProcessed | isDisabled | CommentOnFailure
-//	harisov | 1 | паспорт Харисов Д.И. 1009 123848==PASSPORT:1009123848 | false | Не удалось определить корректный паспорт ФЛ
-//	harisov | 2 | Паспорт Харисов Д.И. 10090 123848=?PASSPORT:1009123848 | false | Не удалось определить некорректный паспорт ФЛ
+//	author | number | stringToProcessed | isDisabled | commentOnFailure | publishTime
+//	harisov | 1 | паспорт Харисов Д.И. 1009 123848==PASSPORT:1009123848 | false | Не удалось определить корректный паспорт ФЛ |
+//	harisov | 2 | Паспорт Харисов Д.И. 10090 123848=?PASSPORT:1009123848 | false | Не удалось определить некорректный паспорт ФЛ |
 type TestDesc struct {
 	Author            string
 	Number            int
@@ -49,8 +49,8 @@ func ParseFromFile(filePath string) []TestDesc {
 			wasHeaderRead = true
 		} else {
 			// Для каждого поля - убираем пробелы с начала и с конца
-			for _, field := range record {
-				strings.TrimSpace(field)
+			for i, field := range record {
+				record[i] = strings.TrimSpace(field)
 			}
 
 			// Парсим номер в int
@@ -130,8 +130,8 @@ func Validate(filePath string) TestDescFileValidateResult {
 				wasHeaderRead = true
 			} else {
 				// Для каждого поля - убираем пробелы с начала и с конца
-				for _, field := range record {
-					strings.TrimSpace(field)
+				for i, field := range record {
+					record[i] = strings.TrimSpace(field)
 				}
 
 				match, _ := regexp.MatchString(output.INPUT_STRUCTURE_REGEX, record[2])
