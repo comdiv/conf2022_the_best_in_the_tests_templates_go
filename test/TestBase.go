@@ -5,6 +5,7 @@ import (
 	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/input"
 	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/output"
 	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/parser"
+	"os"
 	"strings"
 	"testing"
 )
@@ -45,6 +46,11 @@ func (base *TestBase) Run(t *testing.T) {
 			stat.runLocalTest(testFile.Path, t)
 		case MAIN:
 			stat.runMainTest(testFile.Path, t)
+
+			mainFile, _ := os.Create("report.md")
+			defer mainFile.Close()
+
+			mainFile.WriteString(fmt.Sprintf("%+v", stat))
 		}
 
 	}
