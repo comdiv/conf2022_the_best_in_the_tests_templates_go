@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/doc_type"
 	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/output"
+	"regexp"
 	"testing"
 )
 
@@ -122,5 +123,39 @@ func Test_Match(t *testing.T) {
 				testMatch(t, result, actualDocs, !resultCase.IsExactly)
 			})
 		})
+	}
+}
+
+func Test_InputRegex(t *testing.T) {
+	correctInputs := []string{
+		"паспортРФ==PASSPORT_RF",
+		"паспортРФ~=PASSPORT_RF",
+		"паспортРФ=?PASSPORT_RF",
+		"паспортРФ~?PASSPORT_RF",
+	}
+
+	for _, correctInput := range correctInputs {
+		match, _ := regexp.MatchString(output.INPUT_STRUCTURE_REGEX, correctInput)
+
+		if !match {
+			t.Errorf("Строка - %s должна удолетворять структуре описанию тестов", correctInput)
+		}
+	}
+
+	incorrectInputs := []string{
+		"11===UNDEFINED",
+		"11~~=UNDEFINED",
+		"11=??UNDEFINED",
+		"11=~?UNDEFINED",
+		"=~?UNDEFINED",
+		"=~=",
+	}
+
+	for _, incorrectInput := range incorrectInputs {
+		match, _ := regexp.MatchString(output.INPUT_STRUCTURE_REGEX, incorrectInput)
+
+		if match {
+			t.Errorf("Строка - %s не должна удолетворять структуре описанию тестов", incorrectInput)
+		}
 	}
 }

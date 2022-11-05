@@ -8,9 +8,9 @@ import (
 	"testing"
 )
 
-const CORRECT_INPUT = "1"
+const CORRECT_INPUT = "пасспортРФ"
 const CORRECT_CONSTRAINTS = "=="
-const CORRECT_DOC_TYPE = doc_type.UNDEFINED
+const CORRECT_DOC_TYPE = doc_type.PASSPORT_RF
 
 func testParseDocs(t *testing.T, input string, expectedParsedDocs []output.ExtractedDocument) {
 	var parsedResult = output.Parse(input)

@@ -13,11 +13,17 @@ type ExpectedResult struct {
 	Docs            []ExtractedDocument
 }
 
+// EXPECTED_DOCUMENTS_SEPARATOR символ-разделитель при перечислении документов в ожидаемом результате
 const EXPECTED_DOCUMENTS_SEPARATOR = ','
+
+// EXPECTED_DOCUMENT_PARTS_SEPARATOR символ, разделающий тип и номер документа
 const EXPECTED_DOCUMENT_PARTS_SEPARATOR = ':'
+
+// EXPECTED_INVALID_SYMBOL Префикс документа - номер документа не валиден
 const EXPECTED_INVALID_SYMBOL = "!"
 
-const INPUT_STRUCTURE_REGEX = "^([\\s\\S]+?)([=?~]{2})([\\s\\S]+?)$"
+// INPUT_STRUCTURE_REGEX Регулярное выражение структуры описания теста
+const INPUT_STRUCTURE_REGEX = "^([\\s\\S]+?[^~=?]+)(==|~=|=\\?|~\\?)([^~=?]+[\\s\\S]+?)$"
 
 func (result *ExpectedResult) Match(actual []ExtractedDocument) bool {
 	switch {

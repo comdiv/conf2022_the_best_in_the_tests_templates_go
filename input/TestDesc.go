@@ -3,8 +3,10 @@ package input
 import (
 	"encoding/csv"
 	"fmt"
+	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/output"
 	"io"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -132,6 +134,12 @@ func Validate(filePath string) TestDescFileValidateResult {
 					strings.TrimSpace(field)
 				}
 
+				match, _ := regexp.MatchString(output.INPUT_STRUCTURE_REGEX, record[2])
+
+				if !match {
+					errorMessages = append(errorMessages, FormErrorMessage(currentLineNumber, fmt.Sprintf("Описание теста не удолетворяет структуре - %s", output.INPUT_STRUCTURE_REGEX)))
+				}
+
 				if lineNumberFromMap, ok := testIdToLineNumber[record[0]+record[1]]; ok {
 					errorMessages = append(errorMessages, FormErrorMessage(currentLineNumber, fmt.Sprintf("В строках с номерами %d и %d совпадает связка Author+Number", lineNumberFromMap, currentLineNumber)))
 				} else {
@@ -184,6 +192,11 @@ func BuildCsvReader(file *os.File) *csv.Reader {
 	return reader
 }
 
-const DEFAULT_HEADER = "Author|Number|StringToProcessed|isDisabled|CommentOnFailure"
-const DEFAULT_FIELDS_COUNT = 5
+// DEFAULT_HEADER - заголовок всех файлов с описаниями тестов
+const DEFAULT_HEADER = "author|number|stringToProcessed|isDisabled|commentOnFailure|publishTime"
+
+// DEFAULT_FIELDS_COUNT - кол-во полей в каждой строке с описаниями тестов
+const DEFAULT_FIELDS_COUNT = 6
+
+// DEFAULT_COLUMN_DELIMITER - разделитель, использующийся в файлах с описаниями тестов
 const DEFAULT_COLUMN_DELIMITER = '|'
