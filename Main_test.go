@@ -26,10 +26,6 @@ func Test_main(t *testing.T) {
 	testBase.Run(t)
 }
 
-func TestReq(t *testing.T) {
-	createMainFile()
-}
-
 func createMainFile() {
 	requestURL := "https://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@raw.githubusercontent.com/spectrum-data/conf2022_the_best_in_the_tests_templates_base/main/main.csv"
 	res, err := http.Get(requestURL)

@@ -6,6 +6,7 @@ import (
 	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/output"
 	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/parser"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -47,10 +48,7 @@ func (base *TestBase) Run(t *testing.T) {
 		case MAIN:
 			stat.runMainTest(testFile.Path, t)
 
-			mainFile, _ := os.Create("report.md")
-			defer mainFile.Close()
-
-			mainFile.WriteString(fmt.Sprintf("%+v", stat))
+			stat.makeReport()
 		}
 
 	}
@@ -150,6 +148,86 @@ func (stat *TestStatistics) runMainTest(path string, t *testing.T) {
 		}
 	}
 
+}
+
+func (stat *TestStatistics) makeReport() {
+	mainFile, _ := os.Create("report.md")
+	defer mainFile.Close()
+
+	appendAndPrint(mainFile, fmt.Sprintf("##### Owner`s login:%s", stat.OwnerLogin))
+	if stat.IsBasePass {
+		appendAndPrint(mainFile, "##### All basic tests were passed")
+	} else {
+		appendAndPrint(mainFile, "##### All basic tests were NOT passed")
+	}
+	appendAndPrint(mainFile, "")
+
+	localPassedCount := countPassed(stat.LocalResults)
+	appendAndPrint(mainFile, fmt.Sprintf("##### Your own tests: %d/%d", localPassedCount, len(stat.LocalResults)))
+	appendAndPrint(mainFile, fmt.Sprintf("##### So, %d test(s) can get you points", localPassedCount))
+	appendAndPrint(mainFile, "")
+
+	groupByAuthor := make(map[string][]TestResult)
+
+	for _, testResult := range stat.MainResults {
+		groupByAuthor[testResult.Author] = append(groupByAuthor[testResult.Author], testResult)
+	}
+
+	appendAndPrint(mainFile, "##### Competitors:")
+	for author, testResults := range groupByAuthor {
+		countPassed := countPassed(testResults)
+
+		appendAndPrint(mainFile, fmt.Sprintf("##### %s: you passed  %d/%d", author, countPassed, len(testResults)))
+	}
+	appendAndPrint(mainFile, "")
+
+	appendLine(mainFile, "##### FULL_INFO")
+	appendLine(mainFile, "|author|input|expected|result|")
+	appendLine(mainFile, "|-----|-----|-----|-----|")
+
+	for _, testResult := range stat.LocalResults {
+		appendTestResult(mainFile, testResult)
+	}
+
+	for _, testResults := range groupByAuthor {
+		for _, testResult := range testResults {
+			appendTestResult(mainFile, testResult)
+		}
+	}
+}
+
+func appendTestResult(file *os.File, result TestResult) {
+	splitStringToProcessed := regexp.MustCompile(output.INPUT_STRUCTURE_REGEX).FindStringSubmatch(result.StringToProcessed)
+	stringToWrite := fmt.Sprintf(
+		"|%s|%s|%s%s|%v|\n",
+		result.Author,
+		splitStringToProcessed[1],
+		splitStringToProcessed[2],
+		splitStringToProcessed[3],
+		result.IsPass,
+	)
+
+	file.WriteString(stringToWrite)
+}
+
+func appendAndPrint(file *os.File, input string) {
+	appendLine(file, input)
+	fmt.Println(input)
+}
+
+func appendLine(file *os.File, input string) {
+	file.WriteString(fmt.Sprintf("%s\n", input))
+}
+
+func countPassed(testResults []TestResult) int {
+	count := 0
+	for _, testResult := range testResults {
+		if testResult.IsPass {
+			count = +1
+		}
+	}
+
+	return count
 }
 
 func contains(results []TestResult, stringToSearch string) bool {
