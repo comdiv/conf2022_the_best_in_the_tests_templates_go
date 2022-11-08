@@ -9,9 +9,23 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 )
 
 type TestFileType int
+
+func (t TestFileType) String() string {
+	switch t {
+	case BASE:
+		return "BASE"
+	case LOCAL:
+		return "LOCAL"
+	case MAIN:
+		return "MAIN"
+	default:
+		return t.String()
+	}
+}
 
 const (
 	BASE  TestFileType = 0
@@ -29,9 +43,14 @@ type TestBase struct {
 }
 
 var MY_LOGIN = "harisov"
+
+var EXPECTED_RESULT_PARSER_OPTIONS = input.ParseOption{Author: MY_LOGIN, Publish: time.Now()}
+
 var docParser = parser.RandomSuccessfulParser{}
 
 func (base *TestBase) Run(t *testing.T) {
+	base.validateFiles(t)
+
 	stat := TestStatistics{
 		OwnerLogin:   MY_LOGIN,
 		IsBasePass:   true,
@@ -54,16 +73,35 @@ func (base *TestBase) Run(t *testing.T) {
 	}
 }
 
+func (base *TestBase) validateFiles(t *testing.T) {
+	for _, fileDesc := range base.TestFiles {
+		err := fileDesc.validate()
+
+		if err != nil {
+			t.Fatalf("Не удалось распарсить файл - %v. Ошибка - '%s'", fileDesc.Type, err.Error())
+		}
+	}
+}
+
+func (file *TestDescFile) validate() error {
+	openedFile, _ := os.Open(file.Path)
+	defer openedFile.Close()
+
+	_, err := input.Parse(openedFile, &EXPECTED_RESULT_PARSER_OPTIONS)
+
+	return err
+}
+
 func runTest(t *testing.T, desc input.TestDesc) bool {
-	expected := output.Parse(desc.StringToProcessed)
-	testName := fmt.Sprintf("Входная строка - %s. Ожидаемый список доков - %+v", desc.StringToProcessed, expected.Docs)
+	expected := output.ParseExpectedResult(fmt.Sprintf("%s%s", desc.Input, desc.Expected))
+	testName := fmt.Sprintf("Входная строка - %s. Ожидаемый список доков - %+v", desc.Expected, expected.Docs)
 
 	return t.Run(testName, func(innerT *testing.T) {
-		actual := docParser.Parse(desc.StringToProcessed)
+		actual := docParser.Parse(desc.Input)
 
 		if !expected.Match(actual) {
 			fmt.Println(desc.CommentOnFailure)
-			fmt.Printf("Входная строка - %s\n", desc.StringToProcessed)
+			fmt.Printf("Входная строка - %s\n", desc.Expected)
 			fmt.Printf("Ожидаемый список доков - %v\n", expected.Docs)
 			fmt.Printf("Актуальный список доков - %v\n", actual)
 
@@ -74,11 +112,14 @@ func runTest(t *testing.T, desc input.TestDesc) bool {
 }
 
 func (stat *TestStatistics) runBaseTest(path string, t *testing.T) {
-	testDescriptions := input.ParseFromFile(path)
+	file, _ := os.Open(path)
+	defer file.Close()
+
+	testDescriptions, _ := input.Parse(file, &EXPECTED_RESULT_PARSER_OPTIONS)
 
 	t.Run("Базовый функционал - базовые тесты", func(innerT *testing.T) {
 		for _, testDesc := range testDescriptions {
-			if !runTest(innerT, testDesc) {
+			if !runTest(innerT, *testDesc) {
 				stat.IsBasePass = false
 			}
 		}
@@ -86,18 +127,21 @@ func (stat *TestStatistics) runBaseTest(path string, t *testing.T) {
 }
 
 func (stat *TestStatistics) runLocalTest(path string, t *testing.T) {
-	testDescriptions := input.ParseFromFile(path)
+	file, _ := os.Open(path)
+	defer file.Close()
+
+	testDescriptions, _ := input.Parse(file, &EXPECTED_RESULT_PARSER_OPTIONS)
 
 	t.Run("Запуск локальных тестов", func(innerT *testing.T) {
 		for _, testDesc := range testDescriptions {
 
-			testResult := runTest(innerT, testDesc)
+			testResult := runTest(innerT, *testDesc)
 
 			stat.LocalResults = append(
 				stat.LocalResults,
 				TestResult{
 					Author:            MY_LOGIN,
-					StringToProcessed: testDesc.StringToProcessed,
+					StringToProcessed: testDesc.Expected,
 					IsPass:            testResult,
 				})
 		}
@@ -105,32 +149,19 @@ func (stat *TestStatistics) runLocalTest(path string, t *testing.T) {
 }
 
 func (stat *TestStatistics) runMainTest(path string, t *testing.T) {
-	testDescriptions := input.ParseFromFile(path)
+	file, _ := os.Open(path)
+	defer file.Close()
+
+	testDescriptions, _ := input.Parse(file, &EXPECTED_RESULT_PARSER_OPTIONS)
 
 	groupByAuthor := make(map[string][]input.TestDesc)
 
 	for _, testDesc := range testDescriptions {
-		groupByAuthor[testDesc.Author] = append(groupByAuthor[testDesc.Author], testDesc)
+		groupByAuthor[testDesc.Author] = append(groupByAuthor[testDesc.Author], *testDesc)
 	}
 
 	for author, testDescs := range groupByAuthor {
-		if strings.ToLower(author) == strings.ToLower(MY_LOGIN) {
-			t.Run("Запуск своих тестов, которые есть в общих, но которых нет в локальном файле", func(innerT *testing.T) {
-				for _, testDesc := range testDescs {
-					if !contains(stat.LocalResults, testDesc.StringToProcessed) {
-						testResult := runTest(innerT, testDesc)
-
-						stat.LocalResults = append(
-							stat.LocalResults,
-							TestResult{
-								Author:            MY_LOGIN,
-								StringToProcessed: testDesc.StringToProcessed,
-								IsPass:            testResult,
-							})
-					}
-				}
-			})
-		} else {
+		if strings.ToLower(author) != strings.ToLower(MY_LOGIN) {
 			t.Run(fmt.Sprintf("Тесты от %s", author), func(innerT *testing.T) {
 
 				for _, testDesc := range testDescs {
@@ -140,7 +171,7 @@ func (stat *TestStatistics) runMainTest(path string, t *testing.T) {
 						stat.MainResults,
 						TestResult{
 							Author:            author,
-							StringToProcessed: testDesc.StringToProcessed,
+							StringToProcessed: testDesc.Expected,
 							IsPass:            testResult,
 						})
 				}

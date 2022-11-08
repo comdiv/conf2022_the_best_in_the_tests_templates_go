@@ -1,6 +1,7 @@
 package output
 
 import (
+	"fmt"
 	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/doc_type"
 	"log"
 	"regexp"
@@ -22,8 +23,14 @@ const EXPECTED_DOCUMENT_PARTS_SEPARATOR = ':'
 // EXPECTED_INVALID_SYMBOL Префикс документа - номер документа не валиден
 const EXPECTED_INVALID_SYMBOL = "!"
 
+// VALID_DOC_SUFFIX - Суфикс валидного документа документа - номер документа валиден
+const VALID_DOC_SUFFIX = "+"
+
+// INVALID_DOC_SUFFIX  - Суфикс не валидного документа документа - номер документа не валиден
+const INVALID_DOC_SUFFIX = "-"
+
 // INPUT_STRUCTURE_REGEX Регулярное выражение структуры описания теста
-const INPUT_STRUCTURE_REGEX = "^([\\s\\S]+?[^~=?]+)(==|~=|=\\?|~\\?)([^~=?]+[\\s\\S]+?)$"
+const INPUT_STRUCTURE_REGEX = "^([\\s\\S]*?[^~=?]+)(==|~=|=\\?|~\\?)([^~=?]+[\\s\\S]+?)$"
 
 func (result *ExpectedResult) Match(actual []ExtractedDocument) bool {
 	switch {
@@ -43,7 +50,7 @@ func (result *ExpectedResult) Match(actual []ExtractedDocument) bool {
 	panic("Unreachable code!")
 }
 
-func Parse(input string) ExpectedResult {
+func ParseExpectedResult(input string) ExpectedResult {
 	match, _ := regexp.MatchString(INPUT_STRUCTURE_REGEX, input)
 
 	if !match {
@@ -65,8 +72,8 @@ func compareExactlyOrdered(expected, actual []ExtractedDocument) bool {
 		return false
 	}
 
-	for i, a := range actual {
-		if !a.equal(expected[i]) {
+	for i, e := range expected {
+		if !e.Match(actual[i]) {
 			return false
 		}
 	}
@@ -79,8 +86,8 @@ func compareExactlyNotOrdered(expected, actual []ExtractedDocument) bool {
 		return false
 	}
 
-	for _, e := range expected {
-		if !contains(actual, e) {
+	for _, a := range actual {
+		if !contains(expected, a) {
 			return false
 		}
 	}
@@ -97,7 +104,7 @@ func compareNotExactlyOrdered(expected, actual []ExtractedDocument) bool {
 
 	if len(expected) != 0 {
 		for _, a := range actual {
-			if a.equal(expected[subsequenceIndex]) {
+			if expected[subsequenceIndex].Match(a) {
 				subsequenceIndex += 1
 			}
 
@@ -130,7 +137,7 @@ func compareNotExactlyNotOrdered(expected, actual []ExtractedDocument) bool {
 
 func contains(s []ExtractedDocument, e ExtractedDocument) bool {
 	for _, a := range s {
-		if a.equal(e) {
+		if a.Match(e) {
 			return true
 		}
 	}
@@ -175,17 +182,39 @@ func (result *ExpectedResult) parseExpectedDocs(input string) {
 
 		docParts := strings.Split(docDesc, string(EXPECTED_DOCUMENT_PARTS_SEPARATOR))
 
-		doc := ExtractedDocument{IsValid: true}
+		trimmedFirstPart := strings.TrimSpace(docParts[0])
 
-		if strings.HasPrefix(docParts[0], EXPECTED_INVALID_SYMBOL) {
-			doc.IsValid = false
-			doc.DocType = doc_type.Parse(strings.TrimLeft(docParts[0], EXPECTED_INVALID_SYMBOL))
-		} else {
-			doc.DocType = doc_type.Parse(docParts[0])
+		value := ""
+		isValidationSetup := false
+		isValid := false
+
+		if strings.HasSuffix(trimmedFirstPart, VALID_DOC_SUFFIX) {
+			trimmedFirstPart = strings.TrimSuffix(trimmedFirstPart, VALID_DOC_SUFFIX)
+			isValidationSetup = true
+			isValid = true
+		} else if strings.HasSuffix(trimmedFirstPart, INVALID_DOC_SUFFIX) {
+			trimmedFirstPart = strings.TrimSuffix(trimmedFirstPart, INVALID_DOC_SUFFIX)
+			isValidationSetup = true
 		}
 
 		if len(docParts) > 1 {
-			doc.Value = strings.TrimSpace(docParts[1])
+			value = strings.TrimSpace(docParts[1])
+		}
+
+		doc := ExtractedDocument{
+			DocType:      doc_type.Parse(strings.ToUpper(trimmedFirstPart)),
+			Value:        value,
+			IsValidSetup: isValidationSetup,
+			IsValid:      isValid,
+		}
+
+		if !doc.IsNormal() {
+			panic(
+				fmt.Sprintf("Указанный номер - '%s' - не соответствует нормализованному формату %s для %v",
+					doc.Value,
+					doc.DocType.NormaliseValueRegex().String(),
+					doc.DocType),
+			)
 		}
 
 		result.Docs = append(result.Docs, doc)

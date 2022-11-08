@@ -9,10 +9,6 @@ type ExtractedDocument struct {
 	IsValid      bool
 }
 
-func (expectedDoc *ExtractedDocument) equal(anotherDoc ExtractedDocument) bool {
-	return expectedDoc.DocType == anotherDoc.DocType && expectedDoc.Value == anotherDoc.Value && expectedDoc.IsValid == anotherDoc.IsValid
-}
-
 // Match - проверяет, подходит ли переданный документ под указанный паттерн
 func (expectedDoc *ExtractedDocument) Match(actualDoc ExtractedDocument) bool {
 	doDocTypesEqual := expectedDoc.DocType == actualDoc.DocType
@@ -23,4 +19,8 @@ func (expectedDoc *ExtractedDocument) Match(actualDoc ExtractedDocument) bool {
 	return doDocTypesEqual &&
 		(!isNeedToCompareNumber || expectedDoc.Value == actualDoc.Value) &&
 		(!isNeedToCompareValidation || expectedDoc.IsValid == actualDoc.IsValid)
+}
+
+func (expectedDoc *ExtractedDocument) IsNormal() bool {
+	return len(expectedDoc.Value) == 0 || expectedDoc.DocType.NormaliseValueRegex().MatchString(expectedDoc.Value)
 }
