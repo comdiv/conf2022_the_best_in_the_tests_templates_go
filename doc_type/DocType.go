@@ -103,6 +103,7 @@ func Parse(docTypeAsString string) DocType {
 	}
 }
 
+// NormaliseValueRegex - получает регулярное выражение для проверки нормализованного номера документа
 func (doc DocType) NormaliseValueRegex() *regexp.Regexp {
 	var pattern string
 
