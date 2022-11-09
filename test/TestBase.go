@@ -12,42 +12,20 @@ import (
 	"time"
 )
 
-type TestFileType int
-
-func (t TestFileType) String() string {
-	switch t {
-	case BASE:
-		return "BASE"
-	case LOCAL:
-		return "LOCAL"
-	case MAIN:
-		return "MAIN"
-	default:
-		return t.String()
-	}
-}
-
-const (
-	BASE  TestFileType = 0
-	LOCAL TestFileType = 1
-	MAIN  TestFileType = 2
-)
-
-type TestDescFile struct {
-	Path string
-	Type TestFileType
-}
-
-type TestBase struct {
-	TestFiles []TestDescFile
-}
-
+// MY_LOGIN Логин на GitHub`e, под которым участник сделал себе форку данного репозитория
+// ПЕРЕД ЗАПУСКОМ ТЕСТОВ - ДОЛЖЕН БЫТЬ ЗАПОЛНЕН!
 var MY_LOGIN = "harisov"
 
+// Экземпляр парсера, который должны реализовать участники
+var docParser parser.IDocParser = &parser.EmptyDocParser{}
+
+// EXPECTED_RESULT_PARSER_OPTIONS - Дополнительные настройки для парсинга входных файлов
+// НЕ МЕНЯТЬ!
 var EXPECTED_RESULT_PARSER_OPTIONS = input.ParseOption{Author: MY_LOGIN, Publish: time.Now()}
 
-var docParser = parser.RandomSuccessfulParser{}
-
+// Run - Запуск тестов. Умеет определять по типу тестового файла - как запускать полученные из него тесты.
+//
+// Также содержит валидация входных файлов - если не удалось их спарсить или они были спаршены с ошибкой - выполнение тестов остановится на этапе валидации.
 func (base *TestBase) Run(t *testing.T) {
 	base.validateFiles(t)
 
@@ -94,7 +72,7 @@ func (file *TestDescFile) validate() error {
 
 func runTest(t *testing.T, desc input.TestDesc) bool {
 	expected := output.ParseExpectedResult(fmt.Sprintf("%s%s", desc.Input, desc.Expected))
-	testName := fmt.Sprintf("Входная строка - %s. Ожидаемый список доков - %+v", desc.Expected, expected.Docs)
+	testName := fmt.Sprintf("Входная строка - %s. Ожидаемый список доков - %+v", desc.Expected, expected.ExpectedDocs)
 
 	return t.Run(testName, func(innerT *testing.T) {
 		actual := docParser.Parse(desc.Input)
@@ -102,7 +80,7 @@ func runTest(t *testing.T, desc input.TestDesc) bool {
 		if !expected.Match(actual) {
 			fmt.Println(desc.CommentOnFailure)
 			fmt.Printf("Входная строка - %s\n", desc.Expected)
-			fmt.Printf("Ожидаемый список доков - %v\n", expected.Docs)
+			fmt.Printf("Ожидаемый список доков - %v\n", expected.ExpectedDocs)
 			fmt.Printf("Актуальный список доков - %v\n", actual)
 
 			innerT.Fail()
@@ -227,6 +205,36 @@ func (stat *TestStatistics) makeReport() {
 	}
 }
 
+type TestFileType int
+
+func (t TestFileType) String() string {
+	switch t {
+	case BASE:
+		return "BASE"
+	case LOCAL:
+		return "LOCAL"
+	case MAIN:
+		return "MAIN"
+	default:
+		return t.String()
+	}
+}
+
+const (
+	BASE  TestFileType = 0
+	LOCAL TestFileType = 1
+	MAIN  TestFileType = 2
+)
+
+type TestDescFile struct {
+	Path string
+	Type TestFileType
+}
+
+type TestBase struct {
+	TestFiles []TestDescFile
+}
+
 func appendTestResult(file *os.File, result TestResult) {
 	splitStringToProcessed := regexp.MustCompile(output.INPUT_STRUCTURE_REGEX).FindStringSubmatch(result.StringToProcessed)
 	stringToWrite := fmt.Sprintf(
@@ -254,7 +262,7 @@ func countPassed(testResults []TestResult) int {
 	count := 0
 	for _, testResult := range testResults {
 		if testResult.IsPass {
-			count = +1
+			count = count + 1
 		}
 	}
 

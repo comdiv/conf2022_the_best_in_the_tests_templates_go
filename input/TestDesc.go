@@ -10,9 +10,14 @@ import (
 // Описание тестов.
 // Входной файл должен выглядеть так:
 //
-//	author | number | stringToProcessed | isDisabled | commentOnFailure | publishTime
-//	harisov | 1 | паспорт Харисов Д.И. 1009 123848==PASSPORT:1009123848 | false | Не удалось определить корректный паспорт ФЛ |
-//	harisov | 2 | Паспорт Харисов Д.И. 10090 123848=?PASSPORT:1009123848 | false | Не удалось определить некорректный паспорт ФЛ |
+//author |input                            |stringToProcessed		|isDisabled	|commentOnFailure                                		|publishTime
+//harisov|паспорт Харисов Д.И. 1008 123848 |==PASSPORT_RF:1009123848|false     	|Не удалось определить паспорт РФ ФЛ  |2022-01-01T00:12:28.642595Z
+//harisov|Паспорт Харисов Д.И. 10090 123848|=?PASSPORT_RF:1009123848|false     	|Не удалось определить паспорт РФ ФЛ|2022-01-01T00:22:28.642595Z
+//
+// Или в упрощенном формате так:
+// паспорт Харисов Д.И. 1008 123848 -> PASSPORT_RF:1009123848 #Не удалось определить паспорт РФ ФЛ
+// Паспорт Харисов Д.И. 10090 123848 -> =?PASSPORT_RF:1009123848 #Не удалось определить паспорт РФ ФЛ
+
 type TestDesc struct {
 	// Автора теста
 	Author string
@@ -30,8 +35,22 @@ type TestDesc struct {
 	CommentOnFailure string
 
 	// Время публикации теста
+	// Техническое поле, необходимое для сведения
+	// При работе участников - не используется
 	PublishTime string
 }
+
+// DEFAULT_HEADER - заголовок всех файлов с описаниями тестов
+const DEFAULT_HEADER = "author|input|expected|isDisabled|commentOnFailure|publishTime"
+
+// DEFAULT_FIELDS_COUNT - кол-во полей в каждой строке с описаниями тестов
+var DEFAULT_FIELDS_COUNT = strings.Count(DEFAULT_HEADER, DEFAULT_COLUMN_DELIMITER) + 1
+
+// DEFAULT_COLUMN_DELIMITER - разделитель, использующийся в файлах с описаниями тестов
+const DEFAULT_COLUMN_DELIMITER = "|"
+
+// DISABLED_TEST_SYMBOL Префикс ОПИСАНИЯ теста - тест отключен
+const DISABLED_TEST_SYMBOL = "!"
 
 func (td *TestDesc) ToCsvString() string {
 	return strings.Join(
@@ -57,12 +76,3 @@ func (td *TestDesc) ToLocalString() string {
 func (td *TestDesc) BizKey() string {
 	return fmt.Sprintf("%s:%s->%s", td.Author, td.Input, td.Expected)
 }
-
-// DEFAULT_HEADER - заголовок всех файлов с описаниями тестов
-const DEFAULT_HEADER = "author|input|expected|isDisabled|commentOnFailure|publishTime"
-
-// DEFAULT_FIELDS_COUNT - кол-во полей в каждой строке с описаниями тестов
-var DEFAULT_FIELDS_COUNT = strings.Count(DEFAULT_HEADER, DEFAULT_COLUMN_DELIMITER) + 1
-
-// DEFAULT_COLUMN_DELIMITER - разделитель, использующийся в файлах с описаниями тестов
-const DEFAULT_COLUMN_DELIMITER = "|"

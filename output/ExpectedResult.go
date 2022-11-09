@@ -8,10 +8,39 @@ import (
 	"strings"
 )
 
+// ExpectedResult - Описание ожидаемого результата парсинга входной строки
 type ExpectedResult struct {
-	IsExactly       bool
+	// Ограничение на вхождение результатов в итоговую выборку
+	//	true - исключительно ожидаемый набор и ничего кроме
+	//	false - ожидаемый набор содержатся в итоговой выборке, но могут быть и другие
+	IsExactly bool
+
+	// Ограничение на порядок расположения результатов в выборке
+	//	true - ожидаемый набор в указанном порядке
+	//	false - ожидаемый набор в любом порядке
 	IsOrderRequired bool
-	Docs            []ExtractedDocument
+
+	// Набор ожидаемых извлеченных документов
+	ExpectedDocs []ExtractedDocument
+}
+
+// Match Проверяет набор документов на совпадение с ожидаемым результатом
+func (result *ExpectedResult) Match(actual []ExtractedDocument) bool {
+	switch {
+	case result.IsExactly && result.IsOrderRequired:
+		return compareExactlyOrdered(result.ExpectedDocs, actual)
+
+	case result.IsExactly && !result.IsOrderRequired:
+		return compareExactlyNotOrdered(result.ExpectedDocs, actual)
+
+	case !result.IsExactly && result.IsOrderRequired:
+		return compareNotExactlyOrdered(result.ExpectedDocs, actual)
+
+	case !result.IsExactly && !result.IsOrderRequired:
+		return compareNotExactlyNotOrdered(result.ExpectedDocs, actual)
+	}
+
+	panic("Unreachable code!")
 }
 
 // EXPECTED_DOCUMENTS_SEPARATOR символ-разделитель при перечислении документов в ожидаемом результате
@@ -19,9 +48,6 @@ const EXPECTED_DOCUMENTS_SEPARATOR = ','
 
 // EXPECTED_DOCUMENT_PARTS_SEPARATOR символ, разделающий тип и номер документа
 const EXPECTED_DOCUMENT_PARTS_SEPARATOR = ':'
-
-// EXPECTED_INVALID_SYMBOL Префикс документа - номер документа не валиден
-const EXPECTED_INVALID_SYMBOL = "!"
 
 // VALID_DOC_SUFFIX - Суфикс валидного документа документа - номер документа валиден
 const VALID_DOC_SUFFIX = "+"
@@ -31,24 +57,6 @@ const INVALID_DOC_SUFFIX = "-"
 
 // INPUT_STRUCTURE_REGEX Регулярное выражение структуры описания теста
 const INPUT_STRUCTURE_REGEX = "^([\\s\\S]*?[^~=?]+)(==|~=|=\\?|~\\?)([^~=?]+[\\s\\S]+?)$"
-
-func (result *ExpectedResult) Match(actual []ExtractedDocument) bool {
-	switch {
-	case result.IsExactly && result.IsOrderRequired:
-		return compareExactlyOrdered(result.Docs, actual)
-
-	case result.IsExactly && !result.IsOrderRequired:
-		return compareExactlyNotOrdered(result.Docs, actual)
-
-	case !result.IsExactly && result.IsOrderRequired:
-		return compareNotExactlyOrdered(result.Docs, actual)
-
-	case !result.IsExactly && !result.IsOrderRequired:
-		return compareNotExactlyNotOrdered(result.Docs, actual)
-	}
-
-	panic("Unreachable code!")
-}
 
 func ParseExpectedResult(input string) ExpectedResult {
 	match, _ := regexp.MatchString(INPUT_STRUCTURE_REGEX, input)
@@ -217,6 +225,6 @@ func (result *ExpectedResult) parseExpectedDocs(input string) {
 			)
 		}
 
-		result.Docs = append(result.Docs, doc)
+		result.ExpectedDocs = append(result.ExpectedDocs, doc)
 	}
 }

@@ -7,6 +7,11 @@ import (
 	"testing"
 )
 
+// Запуск только БАЗОВЫХ и ЛОКАЛЬНЫХ тестов участника
+//
+// # Файл с базовыми тестами - base.csv
+//
+// Файл с локальными тестами - local.csv
 func Test_local(t *testing.T) {
 	currentDir, _ := os.Getwd()
 

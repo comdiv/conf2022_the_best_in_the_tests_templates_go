@@ -12,6 +12,15 @@ import (
 	"time"
 )
 
+// ParseOption - параметра конфигурации парсера входных файлов с описаниями тестов
+type ParseOption struct {
+	Author  string
+	Publish time.Time
+}
+
+// Parse - основной метод парсинга входных файлов
+// Входе - файл с описаниями тестов (в строгом csv формате, в упрощенном формате)
+// Выход - набор описаний тестов или ошибка
 func Parse(reader io.Reader, options *ParseOption) ([]*TestDesc, error) {
 	scanner := bufio.NewScanner(reader)
 
@@ -153,9 +162,9 @@ func parseLineLocal(line string, lineNumber int, options *ParseOption) (*TestDes
 
 	isDisabled := false
 
-	if strings.HasPrefix(inputCandidate, output.EXPECTED_INVALID_SYMBOL) {
+	if strings.HasPrefix(inputCandidate, DISABLED_TEST_SYMBOL) {
 		isDisabled = true
-		inputCandidate = strings.TrimPrefix(inputCandidate, output.EXPECTED_INVALID_SYMBOL)
+		inputCandidate = strings.TrimPrefix(inputCandidate, DISABLED_TEST_SYMBOL)
 	}
 
 	result := TestDesc{
@@ -214,12 +223,8 @@ func checkExpectedResult(fullExpectation string, lineNumber int) (error error) {
 	return error
 }
 
+// Формат парсинга - либо MAIN (строгий csv-файл), либо LOCAL (упрощенный формат)
 type ParserFormat string
-
-type ParseOption struct {
-	Author  string
-	Publish time.Time
-}
 
 const (
 	UNDEFINED = ""

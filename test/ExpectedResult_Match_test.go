@@ -35,7 +35,7 @@ func Test_Match(t *testing.T) {
 				result := output.ExpectedResult{
 					IsExactly:       resultCase.IsExactly,
 					IsOrderRequired: resultCase.IsOrderRequired,
-					Docs:            []output.ExtractedDocument{someDoc, anotherSomeDoc},
+					ExpectedDocs:    []output.ExtractedDocument{someDoc, anotherSomeDoc},
 				}
 
 				actualDocs := []output.ExtractedDocument{someDoc, anotherSomeDoc}
@@ -47,7 +47,7 @@ func Test_Match(t *testing.T) {
 				result := output.ExpectedResult{
 					IsExactly:       resultCase.IsExactly,
 					IsOrderRequired: resultCase.IsOrderRequired,
-					Docs:            []output.ExtractedDocument{someDoc, anotherSomeDoc},
+					ExpectedDocs:    []output.ExtractedDocument{someDoc, anotherSomeDoc},
 				}
 
 				actualDocs := []output.ExtractedDocument{someDoc}
@@ -67,7 +67,7 @@ func Test_Match(t *testing.T) {
 				result := output.ExpectedResult{
 					IsExactly:       resultCase.IsExactly,
 					IsOrderRequired: resultCase.IsOrderRequired,
-					Docs:            []output.ExtractedDocument{someDoc, anotherSomeDoc},
+					ExpectedDocs:    []output.ExtractedDocument{someDoc, anotherSomeDoc},
 				}
 
 				actualDocs := []output.ExtractedDocument{anotherSomeDoc, someDoc}
@@ -85,7 +85,7 @@ func Test_Match(t *testing.T) {
 				result := output.ExpectedResult{
 					IsExactly:       resultCase.IsExactly,
 					IsOrderRequired: resultCase.IsOrderRequired,
-					Docs:            []output.ExtractedDocument{someDoc, anotherSomeDoc},
+					ExpectedDocs:    []output.ExtractedDocument{someDoc, anotherSomeDoc},
 				}
 
 				actualDocs := []output.ExtractedDocument{anotherSomeDoc, {}, someDoc}
@@ -97,7 +97,7 @@ func Test_Match(t *testing.T) {
 				result := output.ExpectedResult{
 					IsExactly:       resultCase.IsExactly,
 					IsOrderRequired: resultCase.IsOrderRequired,
-					Docs:            []output.ExtractedDocument{},
+					ExpectedDocs:    []output.ExtractedDocument{},
 				}
 
 				var actualDocs []output.ExtractedDocument
@@ -115,7 +115,7 @@ func Test_Match(t *testing.T) {
 				result := output.ExpectedResult{
 					IsExactly:       resultCase.IsExactly,
 					IsOrderRequired: resultCase.IsOrderRequired,
-					Docs:            []output.ExtractedDocument{},
+					ExpectedDocs:    []output.ExtractedDocument{},
 				}
 
 				actualDocs := []output.ExtractedDocument{someDoc}

@@ -7,6 +7,9 @@ import (
 	"testing"
 )
 
+// Запуск только БАЗОВЫХ ТЕСТОВ
+//
+// Файл с тестами - base.csv
 func Test_base(t *testing.T) {
 	currentDir, _ := os.Getwd()
 

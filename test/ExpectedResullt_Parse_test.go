@@ -17,15 +17,15 @@ func testParseDocs(t *testing.T, input string, expectedParsedDocs []output.Extra
 
 	actualEqualsExpected := true
 
-	if len(parsedResult.Docs) != len(expectedParsedDocs) {
+	if len(parsedResult.ExpectedDocs) != len(expectedParsedDocs) {
 		actualEqualsExpected = false
 	} else {
-		actualEqualsExpected = reflect.DeepEqual(expectedParsedDocs, parsedResult.Docs)
+		actualEqualsExpected = reflect.DeepEqual(expectedParsedDocs, parsedResult.ExpectedDocs)
 	}
 
 	if !actualEqualsExpected {
 		t.Errorf("При парсинге строки %s, результат - %+v\n не совпадает с ожидаемым -  %+v\n",
-			input, parsedResult.Docs, expectedParsedDocs)
+			input, parsedResult.ExpectedDocs, expectedParsedDocs)
 	}
 }
 
@@ -121,10 +121,10 @@ func Test_Parse_AllDocTypes(t *testing.T) {
 		t.Run(fmt.Sprintf("Извлекается документ - %v", expectedDocType), func(t *testing.T) {
 			parsed := output.ParseExpectedResult(inputString)
 
-			if len(parsed.Docs) == 0 {
+			if len(parsed.ExpectedDocs) == 0 {
 				t.Errorf("Не удалось распарсить строку - %s", inputString)
-			} else if parsed.Docs[0].DocType != expectedDocType {
-				t.Errorf("При парсинге строки - %s, ожидается документ - %v, а не - %v", inputString, expectedDocType, parsed.Docs[0].DocType)
+			} else if parsed.ExpectedDocs[0].DocType != expectedDocType {
+				t.Errorf("При парсинге строки - %s, ожидается документ - %v, а не - %v", inputString, expectedDocType, parsed.ExpectedDocs[0].DocType)
 			}
 		})
 	}
@@ -193,7 +193,7 @@ func Test_ValidationIsNotSetup(t *testing.T) {
 
 	result := output.ParseExpectedResult(input)
 
-	if result.Docs[0].IsValidSetup {
+	if result.ExpectedDocs[0].IsValidSetup {
 		t.Error("Флаг установки валидации должен быть false")
 	}
 }
@@ -203,7 +203,7 @@ func Test_SetupPositiveValidation(t *testing.T) {
 
 	result := output.ParseExpectedResult(input)
 
-	if !result.Docs[0].IsValidSetup || !result.Docs[0].IsValid {
+	if !result.ExpectedDocs[0].IsValidSetup || !result.ExpectedDocs[0].IsValid {
 		t.Error("Флаг установки валидации должен быть true, а сама валидация - true")
 	}
 }
@@ -213,7 +213,7 @@ func Test_SetupNegativeValidation(t *testing.T) {
 
 	result := output.ParseExpectedResult(input)
 
-	if !result.Docs[0].IsValidSetup || result.Docs[0].IsValid {
+	if !result.ExpectedDocs[0].IsValidSetup || result.ExpectedDocs[0].IsValid {
 		t.Error("Флаг установки валидации должен быть true, а сама валидация - false")
 	}
 }
