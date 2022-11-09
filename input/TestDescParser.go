@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/output"
 	"io"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -41,6 +42,10 @@ func Parse(reader io.Reader, options *ParseOption) ([]*TestDesc, error) {
 
 		if format == UNDEFINED {
 			f, e := detektFormat(line, options)
+
+			if f == SKIP {
+				return result, nil
+			}
 
 			if e != nil {
 				mainError = e
@@ -182,6 +187,13 @@ func parseLineLocal(line string, lineNumber int, options *ParseOption) (*TestDes
 }
 
 func detektFormat(line string, options *ParseOption) (ParserFormat, error) {
+	if line == "404: Not Found" {
+		if os.Getenv("IS_LOCAL_TEST_MODE") == "true" {
+			return SKIP, nil
+		} else {
+			return UNDEFINED, fmt.Errorf("NOT_FOUND")
+		}
+	}
 	var format ParserFormat = UNDEFINED
 	var err error
 
@@ -230,4 +242,5 @@ const (
 	UNDEFINED = ""
 	LOCAL     = "^([\\s\\S]*?[^~=?]+)->(==|~=|=\\?|~\\?)?([^~=?]+[\\s\\S]*?)$"
 	MAIN      = "^\\s*author\\s*\\|\\s*input.*$"
+	SKIP      = ""
 )

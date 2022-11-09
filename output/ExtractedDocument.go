@@ -29,7 +29,7 @@ func (expectedDoc *ExtractedDocument) Match(actualDoc ExtractedDocument) bool {
 
 	return doDocTypesEqual &&
 		(!isNeedToCompareNumber || expectedDoc.Value == actualDoc.Value) &&
-		(!isNeedToCompareValidation || expectedDoc.IsValid == actualDoc.IsValid)
+		(!isNeedToCompareValidation || (expectedDoc.IsValidSetup && expectedDoc.IsValid == actualDoc.IsValid))
 }
 
 func (expectedDoc *ExtractedDocument) IsNormal() bool {

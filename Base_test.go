@@ -1,9 +1,6 @@
 package conf2022_the_best_in_the_tests_templates_go
 
 import (
-	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/test"
-	"os"
-	"path/filepath"
 	"testing"
 )
 
@@ -11,6 +8,8 @@ import (
 //
 // Файл с тестами - base.csv
 func Test_base(t *testing.T) {
+
+	/* // расскоментировать, если хочется использовать только base.csv
 	currentDir, _ := os.Getwd()
 
 	files := []test.TestDescFile{
@@ -20,4 +19,6 @@ func Test_base(t *testing.T) {
 	testBase := test.TestBase{TestFiles: files}
 
 	testBase.Run(t)
+
+	*/
 }

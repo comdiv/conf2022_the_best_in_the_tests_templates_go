@@ -41,6 +41,25 @@ const (
 
 	// SNILS - СНИЛС
 	SNILS DocType = 10
+
+	// NOT_FOUND - специальный маркреный тип для признака, что точно ничего не найдено
+	NOT_FOUND DocType = 100
+
+	/**
+	 * Тестовый тип T1 - форматные требования в принципе отражены в регексе
+	 * Дополнительная валидация:
+	 * > если номер состоит из 8 символов, а не 9 то на индексе [4] должна быть цифра `5`, а последняя цифра - `7`
+	 */
+	// T1 - специальный тестовый тип
+	T1 DocType = 1000
+
+	/**
+	 * Тестовый тип T2 - форматный требования отражены в регексе
+	 * Дополнительная валидация:
+	 * > среди символов от индекса [4] и дальше должна быть хотя бы одна цифра `5`
+	 */
+	// T2 - вотрой специальный тестовый тип
+	T2 DocType = 1001
 )
 
 // String Получает строковое представление экземпляра перечисления
@@ -68,6 +87,12 @@ func (doc DocType) String() string {
 		return "OGRNIP"
 	case SNILS:
 		return "SNILS"
+	case NOT_FOUND:
+		return "NOT_FOUND"
+	case T1:
+		return "T1"
+	case T2:
+		return "T2"
 	default:
 		panic(fmt.Sprintf("попытка получения строкового представления неизвестного типа документа - %v", doc))
 	}
@@ -98,6 +123,12 @@ func Parse(docTypeAsString string) DocType {
 		return SNILS
 	case UNDEFINED.String():
 		return UNDEFINED
+	case NOT_FOUND.String():
+		return NOT_FOUND
+	case T1.String():
+		return T1
+	case T2.String():
+		return T2
 	default:
 		panic(fmt.Sprintf("попытка парсинга неизвестного типа документа - %s", docTypeAsString))
 	}
@@ -128,6 +159,10 @@ func (doc DocType) NormaliseValueRegex() *regexp.Regexp {
 		pattern = "^\\d{15}$"
 	case SNILS:
 		pattern = "^\\d{3}-\\d{3}-\\d{3}-\\d{2}$"
+	case T1:
+		pattern = "^BTT[01]\\d{4,5}$"
+	case T2:
+		pattern = "^BTT[02]\\d{4}$"
 	default:
 		panic(fmt.Sprintf("попытка получения регулярное выражение для нормализации неизвестного типа документа - %v", doc))
 	}
