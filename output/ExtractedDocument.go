@@ -1,6 +1,9 @@
 package output
 
-import "github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/doc_type"
+import (
+	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/doc_type"
+	"strings"
+)
 
 // ExtractedDocument Описание извлеченного документа
 // Используется как для описания ожидаемых документов, так и для описания документов, которые распарсили участники
@@ -21,17 +24,41 @@ type ExtractedDocument struct {
 }
 
 // Match - проверяет, подходит ли переданный документ под указанный паттерн
-func (expectedDoc *ExtractedDocument) Match(actualDoc ExtractedDocument) bool {
-	doDocTypesEqual := expectedDoc.DocType == actualDoc.DocType
+func (document *ExtractedDocument) Match(actualDoc ExtractedDocument) bool {
+	doDocTypesEqual := document.DocType == actualDoc.DocType
 
-	isNeedToCompareNumber := len(expectedDoc.Value) != 0
-	isNeedToCompareValidation := expectedDoc.IsValidSetup
+	isNeedToCompareNumber := len(document.Value) != 0
+	isNeedToCompareValidation := document.IsValidSetup
 
 	return doDocTypesEqual &&
-		(!isNeedToCompareNumber || expectedDoc.Value == actualDoc.Value) &&
-		(!isNeedToCompareValidation || (expectedDoc.IsValidSetup && expectedDoc.IsValid == actualDoc.IsValid))
+		(!isNeedToCompareNumber || document.Value == actualDoc.Value) &&
+		(!isNeedToCompareValidation || (document.IsValidSetup && document.IsValid == actualDoc.IsValid))
 }
 
-func (expectedDoc *ExtractedDocument) IsNormal() bool {
-	return len(expectedDoc.Value) == 0 || expectedDoc.DocType.NormaliseValueRegex().MatchString(expectedDoc.Value)
+func (document *ExtractedDocument) IsNormal() bool {
+	return len(document.Value) == 0 || document.DocType.NormaliseValueRegex().MatchString(document.Value)
+}
+
+func (d *ExtractedDocument) ToShortString() string {
+	var sb strings.Builder
+
+	sb.WriteString(d.DocType.String())
+	if d.IsValidSetup {
+		if d.IsValid {
+			sb.WriteByte('+')
+		} else {
+			sb.WriteByte('-')
+		}
+	} else {
+		sb.WriteByte('*')
+	}
+	sb.WriteByte(':')
+	if len(strings.TrimSpace(d.Value)) == 0 {
+		sb.WriteByte('*')
+	} else {
+		sb.WriteString(strings.TrimSpace(d.Value))
+	}
+	sb.WriteByte(',')
+
+	return sb.String()
 }

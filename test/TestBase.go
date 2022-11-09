@@ -17,7 +17,7 @@ import (
 var MY_LOGIN = "harisov"
 
 // Экземпляр парсера, который должны реализовать участники
-var docParser parser.IDocParser = &parser.EmptyDocParser{}
+var docParser parser.IDocParser = &parser.UserDocParser{}
 
 // EXPECTED_RESULT_PARSER_OPTIONS - Дополнительные настройки для парсинга входных файлов
 // НЕ МЕНЯТЬ!
@@ -72,16 +72,24 @@ func (file *TestDescFile) validate() error {
 
 func runTest(t *testing.T, desc input.TestDesc) bool {
 	expected := output.ParseExpectedResult(fmt.Sprintf("%s%s", desc.Input, desc.Expected))
-	testName := fmt.Sprintf("Входная строка - %s. Ожидаемый список доков - %+v", desc.Expected, expected.ExpectedDocs)
+	testName := fmt.Sprintf("Входная строка - %s. Ожидаемый список доков - %s", desc.Input, expected.ToPatternString())
 
 	return t.Run(testName, func(innerT *testing.T) {
 		actual := docParser.Parse(desc.Input)
 
+		var sb strings.Builder
+		sb.WriteByte('[')
+		for _, d := range actual {
+			sb.WriteString(d.ToShortString())
+			sb.WriteByte(',')
+		}
+		sb.WriteByte(']')
+
 		if !expected.Match(actual) {
 			fmt.Println(desc.CommentOnFailure)
-			fmt.Printf("Входная строка - %s\n", desc.Expected)
-			fmt.Printf("Ожидаемый список доков - %v\n", expected.ExpectedDocs)
-			fmt.Printf("Актуальный список доков - %v\n", actual)
+			fmt.Printf("Входная строка - %s\n", desc.Input)
+			fmt.Printf("Ожидаемый список доков - %s\n", expected.ToPatternString())
+			fmt.Printf("Актуальный список доков - %v\n", sb.String())
 
 			innerT.Fail()
 		}

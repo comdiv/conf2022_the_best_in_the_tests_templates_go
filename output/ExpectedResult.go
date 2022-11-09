@@ -182,6 +182,44 @@ func (result *ExpectedResult) parseConstraints(constraintsString string) {
 	}
 }
 
+func (result *ExpectedResult) ToPatternString() string {
+	var sb strings.Builder
+	if result.IsExactly {
+		sb.WriteByte('=')
+	} else {
+		sb.WriteByte('~')
+	}
+	if result.IsOrderRequired {
+		sb.WriteByte('=')
+	} else {
+		sb.WriteByte('?')
+	}
+	sb.WriteByte('[')
+
+	for _, d := range result.ExpectedDocs {
+		sb.WriteString(d.DocType.String())
+		if d.IsValidSetup {
+			if d.IsValid {
+				sb.WriteByte('+')
+			} else {
+				sb.WriteByte('-')
+			}
+		} else {
+			sb.WriteByte('*')
+		}
+		sb.WriteByte(':')
+		if len(strings.TrimSpace(d.Value)) == 0 {
+			sb.WriteByte('*')
+		} else {
+			sb.WriteString(strings.TrimSpace(d.Value))
+		}
+		sb.WriteByte(',')
+	}
+	sb.WriteByte(']')
+
+	return sb.String()
+}
+
 func (result *ExpectedResult) parseExpectedDocs(input string) {
 	splitDocs := strings.Split(input, string(EXPECTED_DOCUMENTS_SEPARATOR))
 
