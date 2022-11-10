@@ -27,4 +27,5 @@ type TestResult struct {
 	Author            string
 	StringToProcessed string
 	IsPass            bool
+	Input             string
 }

@@ -14,7 +14,7 @@ import (
 
 // MY_LOGIN Логин на GitHub`e, под которым участник сделал себе форку данного репозитория
 // ПЕРЕД ЗАПУСКОМ ТЕСТОВ - ДОЛЖЕН БЫТЬ ЗАПОЛНЕН!
-var MY_LOGIN = "harisov"
+var MY_LOGIN = "comdiv"
 
 // Экземпляр парсера, который должны реализовать участники
 var docParser parser.IDocParser = &parser.UserDocParser{}
@@ -134,6 +134,7 @@ func (stat *TestStatistics) runLocalTest(path string, t *testing.T) {
 					Author:            MY_LOGIN,
 					StringToProcessed: testDesc.Expected,
 					IsPass:            testResult,
+					Input:             testDesc.Input,
 				})
 		}
 	})
@@ -167,6 +168,7 @@ func (stat *TestStatistics) runMainTest(path string, t *testing.T) {
 							Author:            author,
 							StringToProcessed: testDesc.Expected,
 							IsPass:            testResult,
+							Input:             testDesc.Input,
 						})
 				}
 			})
@@ -252,7 +254,7 @@ type TestBase struct {
 }
 
 func appendTestResult(file *os.File, result TestResult) {
-	splitStringToProcessed := regexp.MustCompile(output.INPUT_STRUCTURE_REGEX).FindStringSubmatch(result.StringToProcessed)
+	splitStringToProcessed := regexp.MustCompile(output.INPUT_STRUCTURE_REGEX).FindStringSubmatch(result.Input + result.StringToProcessed)
 	if len(splitStringToProcessed) < 4 {
 		return
 	}
