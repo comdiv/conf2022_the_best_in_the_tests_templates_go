@@ -253,6 +253,9 @@ type TestBase struct {
 
 func appendTestResult(file *os.File, result TestResult) {
 	splitStringToProcessed := regexp.MustCompile(output.INPUT_STRUCTURE_REGEX).FindStringSubmatch(result.StringToProcessed)
+	if len(splitStringToProcessed) < 4 {
+		return
+	}
 	stringToWrite := fmt.Sprintf(
 		"|%s|%s|%s%s|%v|\n",
 		result.Author,
