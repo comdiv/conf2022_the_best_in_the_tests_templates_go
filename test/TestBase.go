@@ -105,6 +105,9 @@ func (stat *TestStatistics) runBaseTest(path string, t *testing.T) {
 
 	t.Run("Базовый функционал - базовые тесты", func(innerT *testing.T) {
 		for _, testDesc := range testDescriptions {
+			if testDesc.IsDisabled {
+				continue
+			}
 			if !runTest(innerT, *testDesc) {
 				stat.IsBasePass = false
 			}
@@ -120,7 +123,9 @@ func (stat *TestStatistics) runLocalTest(path string, t *testing.T) {
 
 	t.Run("Запуск локальных тестов", func(innerT *testing.T) {
 		for _, testDesc := range testDescriptions {
-
+			if testDesc.IsDisabled {
+				continue
+			}
 			testResult := runTest(innerT, *testDesc)
 
 			stat.LocalResults = append(
@@ -151,6 +156,9 @@ func (stat *TestStatistics) runMainTest(path string, t *testing.T) {
 			t.Run(fmt.Sprintf("Тесты от %s", author), func(innerT *testing.T) {
 
 				for _, testDesc := range testDescs {
+					if testDesc.IsDisabled {
+						continue
+					}
 					testResult := runTest(innerT, testDesc)
 
 					stat.MainResults = append(
