@@ -13,19 +13,9 @@ func TryParseInnFl(input string) *output.ExtractedDocument {
 	if len(digits) != 12 {
 		return nil
 	}
-	sum10 := 0
-	for i := 0; i < 10; i++ {
-		sum10 += int(digits[i]-'0') * int(inn_fl_10_mult[i])
-	}
-	cont11 := sum10 % 11 % 10
 
-	sum11 := 0
-	for i := 0; i < 11; i++ {
-		sum11 += int(digits[i]-'0') * int(inn_fl_11_mult[i])
-	}
-	cont12 := sum11 % 11 % 10
-
-	isValid := cont11 == int(digits[10]-'0') && cont12 == int(digits[11]-'0')
+	isValid := FnsControl(digits, 0, 10, 10, inn_fl_10_mult) &&
+		FnsControl(digits, 0, 11, 11, inn_fl_11_mult)
 
 	return &output.ExtractedDocument{
 		DocType:      doc_type.INN_FL,
@@ -42,13 +32,8 @@ func TryParseInnUl(input string) *output.ExtractedDocument {
 	if len(digits) != 10 {
 		return nil
 	}
-	sum9 := 0
-	for i := 0; i < 9; i++ {
-		sum9 += int(digits[i]-'0') * int(inn_ul_9_mult[i])
-	}
-	cont10 := sum9 % 11 % 10
-
-	isValid := cont10 == int(digits[9]-'0')
+	
+	isValid := FnsControl(digits, 0, 9, 9, inn_ul_9_mult)
 
 	return &output.ExtractedDocument{
 		DocType:      doc_type.INN_UL,

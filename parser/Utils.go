@@ -63,3 +63,12 @@ func ExtractDigits(s string) string {
 	}
 	return string(buf)
 }
+
+func FnsControl(digits string, from int, to int, cnt int, mult []byte) bool {
+	sum := 0
+	for i := from; i < to; i++ {
+		sum += int(digits[i]-'0') * int(mult[i-from])
+	}
+	cont := sum % 11 % 10
+	return cont == int(digits[cnt]-'0')
+}
