@@ -44,7 +44,6 @@ func FilterResults(raw []*output.ExtractedDocument) []output.ExtractedDocument {
 		return true
 	})
 	for _, d := range raw {
-
 		if d != nil && d.DocType != doc_type.UNDEFINED && d.DocType != doc_type.NOT_FOUND {
 			result = append(result, *d)
 		}

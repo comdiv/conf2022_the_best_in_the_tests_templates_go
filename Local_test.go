@@ -1,6 +1,9 @@
 package conf2022_the_best_in_the_tests_templates_go
 
 import (
+	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/test"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -10,7 +13,7 @@ import (
 //
 // Файл с локальными тестами - local.csv
 func Test_local(t *testing.T) {
-	/* // Раскомментировать если хочется отдельно тестировать base.csv + local.csv
+	// Раскомментировать если хочется отдельно тестировать base.csv + local.csv
 	currentDir, _ := os.Getwd()
 
 	files := []test.TestDescFile{
@@ -22,5 +25,4 @@ func Test_local(t *testing.T) {
 
 	testBase.Run(t)
 
-	*/
 }

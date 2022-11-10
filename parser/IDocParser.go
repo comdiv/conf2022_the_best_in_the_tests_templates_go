@@ -28,6 +28,7 @@ func (p *UserDocParser) Parse(input string) []output.ExtractedDocument {
 	}
 	var result []*output.ExtractedDocument
 	result = append(result, TryParseInnFl(input))
+	result = append(result, TryParseInnUl(input))
 
 	finalResult := FilterResults(result)
 	// TODO: тут собственно точка входа в вашу уже настоящую реализацию

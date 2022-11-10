@@ -58,7 +58,5 @@ func (d *ExtractedDocument) ToShortString() string {
 	} else {
 		sb.WriteString(strings.TrimSpace(d.Value))
 	}
-	sb.WriteByte(',')
-
 	return sb.String()
 }

@@ -94,8 +94,8 @@ func compareExactlyNotOrdered(expected, actual []ExtractedDocument) bool {
 		return false
 	}
 
-	for _, a := range actual {
-		if !contains(expected, a) {
+	for _, e := range expected {
+		if !contains(actual, e) {
 			return false
 		}
 	}
@@ -145,7 +145,7 @@ func compareNotExactlyNotOrdered(expected, actual []ExtractedDocument) bool {
 
 func contains(s []ExtractedDocument, e ExtractedDocument) bool {
 	for _, a := range s {
-		if a.Match(e) {
+		if e.Match(a) {
 			return true
 		}
 	}

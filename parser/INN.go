@@ -34,3 +34,26 @@ func TryParseInnFl(input string) *output.ExtractedDocument {
 		Value:        digits,
 	}
 }
+
+var inn_ul_9_mult = []byte{2, 4, 10, 3, 5, 9, 4, 6, 8}
+
+func TryParseInnUl(input string) *output.ExtractedDocument {
+	digits := ExtractDigits(input)
+	if len(digits) != 10 {
+		return nil
+	}
+	sum9 := 0
+	for i := 0; i < 9; i++ {
+		sum9 += int(digits[i]-'0') * int(inn_ul_9_mult[i])
+	}
+	cont10 := sum9 % 11 % 10
+
+	isValid := cont10 == int(digits[9]-'0')
+
+	return &output.ExtractedDocument{
+		DocType:      doc_type.INN_UL,
+		IsValidSetup: true,
+		IsValid:      isValid,
+		Value:        digits,
+	}
+}
