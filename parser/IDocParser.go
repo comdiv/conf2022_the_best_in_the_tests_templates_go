@@ -30,6 +30,8 @@ func (p *UserDocParser) Parse(input string) []output.ExtractedDocument {
 	result = append(result, TryParseInnFl(input))
 	result = append(result, TryParseInnUl(input))
 	result = append(result, TryParsePassportRF(input))
+	result = append(result, TryParseOgrn(input))
+	result = append(result, TryParseOgrnip(input))
 
 	finalResult := FilterResults(result)
 	// TODO: тут собственно точка входа в вашу уже настоящую реализацию
