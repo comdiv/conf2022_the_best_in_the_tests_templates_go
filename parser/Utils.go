@@ -4,6 +4,8 @@ import (
 	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/doc_type"
 	"github.com/spectrum-data/conf2022_the_best_in_the_tests_templates_go/output"
 	"sort"
+	"strings"
+	"unicode"
 )
 
 func FilterResults(raw []*output.ExtractedDocument) []output.ExtractedDocument {
@@ -64,6 +66,16 @@ func ExtractDigits(s string) string {
 	return string(buf)
 }
 
+func ExtractDigitsAndLetters(s string) string {
+	var buf []rune
+	for _, b := range s {
+		if unicode.IsDigit(b) || unicode.IsLetter(b) {
+			buf = append(buf, b)
+		}
+	}
+	return string(buf)
+}
+
 func FnsControl(digits string, from int, to int, cnt int, mult []byte) bool {
 	sum := 0
 	for i := from; i < to; i++ {
@@ -71,4 +83,19 @@ func FnsControl(digits string, from int, to int, cnt int, mult []byte) bool {
 	}
 	cont := sum % 11 % 10
 	return cont == int(digits[cnt]-'0')
+}
+
+var tr_from = []rune("ABEKMHOPCTYX")
+var tr_to = []rune("АВЕКМНОРСТУХ")
+
+func VisTranslit(s string) string {
+	var buf []rune
+	for _, r := range []rune(s) {
+		idx := strings.IndexRune(string(tr_from), r)
+		if idx >= 0 {
+			r = tr_to[idx]
+		}
+		buf = append(buf, r)
+	}
+	return string(buf)
 }

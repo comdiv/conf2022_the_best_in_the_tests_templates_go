@@ -24,11 +24,24 @@ func TryParsePassportRF(input string) *output.ExtractedDocument {
 	year, _ := strconv.Atoi(digits[2:4])
 	okato, _ := strconv.Atoi(digits[0:2])
 
-	isValid := year <= (time.Now().Year()/100) && bytes.IndexByte(OKATO, byte(okato)) >= 0
+	isValid := year <= (time.Now().Year()%100) && bytes.IndexByte(OKATO, byte(okato)) >= 0
 	return &output.ExtractedDocument{
 		DocType:      doc_type.PASSPORT_RF,
 		IsValidSetup: true,
 		IsValid:      isValid,
+		Value:        digits,
+	}
+}
+
+func TryParseDriverLicense(input string) *output.ExtractedDocument {
+	digits := ExtractDigits(input)
+	if len(digits) != 10 {
+		return nil
+	}
+	return &output.ExtractedDocument{
+		DocType:      doc_type.DRIVER_LICENSE,
+		IsValidSetup: true,
+		IsValid:      true,
 		Value:        digits,
 	}
 }
