@@ -32,7 +32,59 @@ func (p *UserDocParser) Parse(input string) []output.ExtractedDocument {
 
 func qualificationCase(input string) []output.ExtractedDocument {
 	//TODO: тут реализовать квалификационный минимум
-	return []output.ExtractedDocument{}
+	var result []output.ExtractedDocument
+	rawbtcode := strings.TrimSpace(input[2:])
+	var buffer []byte
+	for _, b := range []byte(rawbtcode) {
+		if (b >= '0' && b <= '9') || b == 'B' || b == 'T' {
+			buffer = append(buffer, b)
+		}
+	}
+	btcode := string(buffer)
+	t1 := tryReadT1(btcode)
+	t2 := tryReadT2(btcode)
+	if t2.IsValid && !t1.IsValid {
+		t2, t1 = t1, t2
+	}
+	if t1.DocType != doc_type.NOT_FOUND {
+		result = append(result, t1)
+	}
+	if t2.DocType != doc_type.NOT_FOUND {
+		result = append(result, t2)
+	}
+	return result
+}
+
+func tryReadT2(btcode string) output.ExtractedDocument {
+	if !(btcode[3] == '2' || btcode[3] == '0') {
+		return output.ExtractedDocument{DocType: doc_type.NOT_FOUND}
+	}
+	if len(btcode) != 8 {
+		return output.ExtractedDocument{DocType: doc_type.NOT_FOUND}
+	}
+	isValid := strings.IndexByte(btcode, '5') > 3
+	return output.ExtractedDocument{
+		DocType:      doc_type.T2,
+		Value:        btcode,
+		IsValidSetup: true,
+		IsValid:      isValid,
+	}
+}
+
+func tryReadT1(btcode string) output.ExtractedDocument {
+	if !(btcode[3] == '1' || btcode[3] == '0') {
+		return output.ExtractedDocument{DocType: doc_type.NOT_FOUND}
+	}
+	if !(len(btcode) == 8 || len(btcode) == 9) {
+		return output.ExtractedDocument{DocType: doc_type.NOT_FOUND}
+	}
+	isValid := len(btcode) == 9 || (btcode[4] == '5' && btcode[7] == '7')
+	return output.ExtractedDocument{
+		DocType:      doc_type.T1,
+		Value:        btcode,
+		IsValidSetup: true,
+		IsValid:      isValid,
+	}
 }
 
 func exampleImplementation(input string) []output.ExtractedDocument {
